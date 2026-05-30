@@ -21,7 +21,7 @@ const ONLINE_RESPONSES = [
   { emoji: "👍", text: "Nao, ta no ar!", sub: "Aproveita enquanto dura." },
   { emoji: "🎉", text: "Nao!", sub: "Inacreditavel, mas ta funcionando." },
   { emoji: "👍", text: "Nao, pode ir!", sub: "Corre antes que caia." },
-  { emoji: "🙏", text: "Nao!", sub: "Gracas a Deus e a STI." },
+  { emoji: "🙏", text: "Nao!", sub: "Gracas a Deus e a CERCOMP." },
   { emoji: "👍", text: "Nao!", sub: "Nao, voce nao ta sonhando." },
 ];
 
