@@ -111,7 +111,7 @@ export default function Home() {
             </a>
             <span className="text-neutral-300">·</span>
             <span className="inline-flex items-center gap-1.5">
-              based on{" "}
+              fork of{" "}
               <a
                 href="https://github.com/trindadetiago/sigaa-caiu"
                 target="_blank"
