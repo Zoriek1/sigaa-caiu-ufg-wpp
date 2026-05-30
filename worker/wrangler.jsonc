@@ -1,6 +1,6 @@
 {
   "name": "sigaa-caiu-ufg-worker",
-  "account_id": "FILL_IN_YOUR_ACCOUNT_ID",
+  "account_id": "add57c7093b25ef9ae443c414d12c81c",
   "main": "src/index.ts",
   "compatibility_date": "2024-09-23",
   "placement": {
@@ -14,7 +14,7 @@
     {
       "binding": "DB",
       "database_name": "sigaa-caiu-ufg-db",
-      "database_id": "FILL_IN_DATABASE_ID"
+      "database_id": "441297b2-d590-4b9f-976a-5f30c7c6e21d"
     }
   ],
   "observability": {
