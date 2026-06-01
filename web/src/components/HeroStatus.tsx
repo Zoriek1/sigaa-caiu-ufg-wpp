@@ -43,6 +43,7 @@ const DOWN_RESPONSES = [
   { emoji: "😭", text: "Sim...", sub: "Era previsivel, ne?" },
   { emoji: "🪦", text: "Sim, foi de base", sub: "Causa da morte: ser o SIGAA." },
   { emoji: "🇧🇷", text: "Sim, foi ver o jogo!", sub: "O SIGAA foi assistir o Brasil jogar. Volta depois do apito final." },
+  { emoji: "🎊🇧🇷", text: "Caiu de emocao!", sub: "Nao segurou o gol e foi junto. Volta quando se recuperar." },
 ];
 
 const CHECKING_RESPONSES = [
