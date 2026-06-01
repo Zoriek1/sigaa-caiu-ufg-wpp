@@ -269,7 +269,7 @@ export function HeroStatus({
         daysSinceLastIncident > 0 &&
         data.status !== "offline" && (
           <p className="mt-6 text-sm text-neutral-400">
-            Estamos ha <span className="font-black text-neutral-900">{daysSinceLastIncident}</span> {daysSinceLastIncident === 1 ? "dia" : "dias"} sem o SIGAA cair
+            Estamos ha <span className="font-semibold text-neutral-600">{daysSinceLastIncident} {daysSinceLastIncident === 1 ? "dia" : "dias"}</span> sem o SIGAA cair
             <span className="ml-1 text-neutral-300">#iLoveSigaa</span>
           </p>
         )}
