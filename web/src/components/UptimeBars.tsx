@@ -46,7 +46,7 @@ const BAR_COLORS = {
   online: "bg-green-500",
   degraded: "bg-yellow-500",
   offline: "bg-red-500",
-  empty: "bg-neutral-200",
+  empty: "bg-sigaa-background",
 };
 
 function hasIncidentOnDay(date: string, incidents: Incident[]): boolean {
@@ -85,48 +85,48 @@ export function UptimeBars({ history, stats, incidents }: Props) {
   const uptime24h = stats?.periods["24h"]?.uptimePercent;
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-medium text-neutral-700">
-          Historico de status
-        </h3>
+    <div className="institutional-panel">
+      <div className="institutional-panel-header flex items-center justify-between">
+        <span>Histórico de status</span>
         {uptime24h !== undefined && (
-          <span className="text-sm text-neutral-500">
+          <span className="text-xs font-normal opacity-90">
             {uptime24h}% uptime (24h)
           </span>
         )}
       </div>
 
-      {/* Barras */}
-      <div className="flex gap-[2px]">
-        {days.map((day, i) => (
-          <div
-            key={i}
-            className={`flex-1 h-8 rounded-sm ${BAR_COLORS[day.status]} transition-all hover:opacity-80`}
-            title={`${day.date}: ${day.status === "empty" ? "sem dados" : day.status}`}
-          />
-        ))}
-      </div>
+      <div className="p-4">
+        {/* Barras */}
+        <div className="flex gap-[2px]">
+          {days.map((day, i) => (
+            <div
+              key={i}
+              className={`flex-1 h-8 rounded-sm ${BAR_COLORS[day.status]} transition-all hover:opacity-80`}
+              title={`${day.date}: ${day.status === "empty" ? "sem dados" : day.status}`}
+            />
+          ))}
+        </div>
 
-      <div className="flex justify-between mt-2 text-xs text-neutral-600">
-        <span>90 dias atras</span>
-        <span>Hoje</span>
-      </div>
+        <div className="flex justify-between mt-2 text-xs text-sigaa-muted">
+          <span>90 dias atrás</span>
+          <span>Hoje</span>
+        </div>
 
-      {/* Legenda */}
-      <div className="flex gap-4 mt-3 text-xs text-neutral-500 justify-center">
-        <span className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-green-500" /> Online
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-yellow-500" /> Lento
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-red-500" /> Offline
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-neutral-200" /> Sem dados
-        </span>
+        {/* Legenda */}
+        <div className="flex gap-4 mt-3 text-xs text-sigaa-muted justify-center">
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-sm bg-green-500" /> Online
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-sm bg-yellow-500" /> Lento
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-sm bg-red-500" /> Offline
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-sm bg-sigaa-background border border-sigaa-border-default" /> Sem dados
+          </span>
+        </div>
       </div>
     </div>
   );

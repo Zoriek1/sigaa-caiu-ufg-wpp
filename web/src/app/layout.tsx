@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   },
   metadataBase: new URL("https://ufg.sigaacaiu.com"),
   openGraph: {
-    title: "SIGAA Caiu? — O SIGAA da UFG ta no ar?",
+    title: "SIGAA Caiu? — O SIGAA da UFG tá no ar?",
     description:
       "Monitor em tempo real do SIGAA da UFG. Veja se o sistema esta no ar, lento ou fora do ar.",
     url: "https://ufg.sigaacaiu.com",
