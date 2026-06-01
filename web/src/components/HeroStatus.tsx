@@ -26,6 +26,7 @@ const ONLINE_RESPONSES = [
   { emoji: "👍",    text: "Nao!",             sub: "Nao, voce nao ta sonhando." },
   /* World Cup */
   { emoji: "🇧🇷⚽", text: "Nao, ta firme!",   sub: "Aguentou o gol, o VAR e a revisao." },
+  { emoji: "🏆🇧🇷", text: "Nao, ta de pe!",   sub: "Sobreviveu ate a prorrogacao." },
 ];
 
 // prettier-ignore
@@ -37,6 +38,7 @@ const SLOW_RESPONSES = [
   { emoji: "🦥",  text: "Nao, mas ta arrastando",sub: "Mais lento que matricula em periodo." },
   /* World Cup */
   { emoji: "🇧🇷", text: "Nao, mas ta na torcida",sub: "Um olho no jogo, outro no sistema." },
+  { emoji: "⏱🇧🇷", text: "Lento, igual VAR",     sub: "Ta analisando o lance ha 10 minutos." },
 ];
 
 // prettier-ignore
