@@ -23,6 +23,9 @@ const ONLINE_RESPONSES = [
   { emoji: "👍", text: "Nao, pode ir!", sub: "Corre antes que caia." },
   { emoji: "🙏", text: "Nao!", sub: "Gracas a Deus e a CERCOMP." },
   { emoji: "👍", text: "Nao!", sub: "Nao, voce nao ta sonhando." },
+
+  /* World Cup Responses */
+  { emoji: "🇧🇷⚽", text: "Nao, ta firme!", sub: "Aguentou o gol, o VAR e a revisao." },
 ];
 
 // "O SIGAA caiu?" → Ainda não, mas ta lento...
