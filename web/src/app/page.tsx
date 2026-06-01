@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { HeroStatus } from "@/components/HeroStatus";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { LayerDetails } from "@/components/LayerDetails";
 import { UptimeBars } from "@/components/UptimeBars";
 import { ResponseTimeChart } from "@/components/ResponseTimeChart";
@@ -69,6 +70,7 @@ export default function Home() {
 
   return (
     <>
+      <ThemeToggle />
       {/* Hero — ocupa a tela inteira */}
       <section className="min-h-screen flex flex-col items-center justify-center px-4 relative">
         <HeroStatus data={status} error={error} daysSinceLastIncident={daysSinceLastIncident} incidents={incidents} />

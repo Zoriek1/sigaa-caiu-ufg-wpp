@@ -4,58 +4,74 @@
   --color-sigaa-primary: #1A3B6C;
   --color-sigaa-secondary: #E0E7F0;
   --color-sigaa-accent: #28549C;
-  
+
   --color-sigaa-background: #F5F5F5;
   --color-sigaa-panel: #FFFFFF;
   --color-sigaa-text: #333333;
   --color-sigaa-muted: #666666;
   --color-sigaa-link: #0044CC;
-  
+
   --color-sigaa-alert-bg: #FFFFCC;
   --color-sigaa-alert-border: #E6C200;
-  
+
   --color-sigaa-border-default: #CCCCCC;
   --color-sigaa-border-blue: #B0C4DE;
 
-  --font-institutional: Arial, Helvetica, sans-serif;
-  --font-sans: var(--font-institutional);
+  --color-sigaa-status-online: #22c55e;
+  --color-sigaa-status-degraded: #eab308;
+  --color-sigaa-status-offline: #ef4444;
 }
 
 @layer base {
-  body {
+  html[data-theme="sigaa"] body {
     background-color: var(--color-sigaa-background);
     color: var(--color-sigaa-text);
-    font-family: var(--font-sans);
+    font-family: Arial, Helvetica, sans-serif;
     font-size: 14px;
-    
-    /* Institutional faint grid background */
-    background-image: 
-      linear-gradient(#ebebeb 1px, transparent 1px), 
+    background-image:
+      linear-gradient(#ebebeb 1px, transparent 1px),
       linear-gradient(90deg, #ebebeb 1px, transparent 1px);
     background-size: 10px 10px;
   }
 
-  a {
+  html[data-theme="sigaa"] a {
     color: var(--color-sigaa-link);
   }
 }
 
 @layer components {
+  /* Default theme — painéis modernos */
   .institutional-panel {
-    background-color: var(--color-sigaa-panel);
-    border: 1px solid var(--color-sigaa-border-blue);
+    background-color: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
     margin-bottom: 20px;
-    border-radius: 2px;
   }
 
   .institutional-panel-header {
+    font-weight: 600;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e5e5e5;
+    color: #171717;
+    font-size: 0.875rem;
+  }
+
+  /* SIGAA theme — painéis institucionais */
+  html[data-theme="sigaa"] .institutional-panel {
+    background-color: var(--color-sigaa-panel);
+    border: 1px solid var(--color-sigaa-border-blue);
+    border-radius: 2px;
+  }
+
+  html[data-theme="sigaa"] .institutional-panel-header {
     background-color: var(--color-sigaa-secondary);
     color: var(--color-sigaa-primary);
     font-weight: bold;
     padding: 8px 12px;
     border-bottom: 1px solid var(--color-sigaa-border-blue);
+    font-size: inherit;
   }
-  
+
   .alert-banner {
     background-color: var(--color-sigaa-alert-bg);
     border: 1px solid var(--color-sigaa-alert-border);
