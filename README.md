@@ -2,9 +2,7 @@
 
 Monitor em tempo real do [SIGAA da UFG](https://sigaa.sistemas.ufg.br). Verifica automaticamente se o sistema esta no ar, lento ou fora do ar a cada 3 minutos.
 
-**Site:** [ufg.sigaacaiu.com](https://ufg.sigaacaiu.com) · **Licença:** [MIT](LICENSE)
-
-> Fork de [sigaacaiu.com](https://sigaacaiu.com), adaptado para a UFG.
+**Site:** [ufg.sigaacaiu.com](https://ufg.sigaacaiu.com)
 
 ## Como funciona
 
