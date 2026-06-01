@@ -32,6 +32,7 @@ const SLOW_RESPONSES = [
   { emoji: "🐢", text: "Mais ou menos", sub: "Ta funcionando em camara lenta." },
   { emoji: "⏳", text: "Nao... ainda", sub: "Pega um cafe enquanto carrega." },
   { emoji: "🦥", text: "Nao, mas ta arrastando", sub: "Mais lento que matricula em periodo." },
+  { emoji: "🇧🇷", text: "Nao, mas ta na torcida", sub: "Um olho no jogo, outro no sistema." },
 ];
 
 // "O SIGAA caiu?" → Sim!
@@ -41,6 +42,7 @@ const DOWN_RESPONSES = [
   { emoji: "👎", text: "Sim", sub: "Surpresa de ninguem." },
   { emoji: "😭", text: "Sim...", sub: "Era previsivel, ne?" },
   { emoji: "🪦", text: "Sim, foi de base", sub: "Causa da morte: ser o SIGAA." },
+  { emoji: "🇧🇷", text: "Sim, foi ver o jogo!", sub: "O SIGAA foi assistir o Brasil jogar. Volta depois do apito final." },
 ];
 
 const CHECKING_RESPONSES = [
@@ -136,7 +138,7 @@ export function HeroStatus({ data, error, daysSinceLastIncident, incidents }: Pr
 
       {daysSinceLastIncident !== null && daysSinceLastIncident > 0 && data.status !== "offline" && (
         <p className="mt-6 text-sm text-neutral-400">
-          Estamos a <span className="font-semibold text-neutral-600">{daysSinceLastIncident} {daysSinceLastIncident === 1 ? "dia" : "dias"}</span> sem o SIGAA cair
+          Estamos ha <span className="font-semibold text-neutral-600">{daysSinceLastIncident} {daysSinceLastIncident === 1 ? "dia" : "dias"}</span> sem o SIGAA cair
           <span className="ml-1 text-neutral-300">#iLoveSigaa</span>
         </p>
       )}
