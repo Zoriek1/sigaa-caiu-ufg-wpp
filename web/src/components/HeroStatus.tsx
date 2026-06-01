@@ -208,9 +208,7 @@ export function HeroStatus({
             data?.status !== "offline" &&
             !error && (
               <div className="mt-8 text-xs text-sigaa-muted uppercase tracking-wider">
-                Estamos ha{" "}
-                <span className="font-black text-neutral-900">{daysSinceLastIncident}</span>{" "}
-                {daysSinceLastIncident === 1 ? "dia" : "dias"} sem incidentes registrados
+                Estamos ha <span className="font-semibold text-sigaa-text">{daysSinceLastIncident} {daysSinceLastIncident === 1 ? "dia" : "dias"}</span> sem incidentes registrados
               </div>
             )}
         </div>
