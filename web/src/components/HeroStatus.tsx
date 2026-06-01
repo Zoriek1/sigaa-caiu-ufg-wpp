@@ -169,13 +169,18 @@ export function HeroStatus({
           </div>
 
           {response && (
-            <div className="mb-8 p-4 border border-sigaa-border-default bg-sigaa-background w-full rounded-sm">
+            <>
+              <div className="text-xs font-bold text-sigaa-muted uppercase tracking-wider mb-2">
+                O SIGAA caiu?
+              </div>
+              <div className="mb-8 p-4 border border-sigaa-border-default bg-sigaa-background w-full rounded-sm">
               <div className="text-3xl mb-2">{response.emoji}</div>
               <div className="font-bold text-sigaa-text">{response.text}</div>
               <div className="text-sm text-sigaa-muted mt-1">
                 {response.sub}
               </div>
             </div>
+            </>
           )}
 
           {error && !response && (

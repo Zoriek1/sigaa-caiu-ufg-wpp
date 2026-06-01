@@ -2,9 +2,9 @@
 
 Monitor em tempo real do [SIGAA da UFG](https://sigaa.sistemas.ufg.br). Verifica automaticamente se o sistema esta no ar, lento ou fora do ar a cada 3 minutos.
 
-**Site:** [ufg.sigaacaiu.com](https://ufg.sigaacaiu.com)
+**Site:** [ufg.sigaacaiu.com](https://ufg.sigaacaiu.com) · **Licença:** [MIT](LICENSE)
 
-Fork de [trindadetiago/sigaa-caiu](https://github.com/trindadetiago/sigaa-caiu) adaptado para a UFG.
+> Fork de [sigaacaiu.com](https://sigaacaiu.com), adaptado para a UFG.
 
 ## Como funciona
 
@@ -55,12 +55,12 @@ Status atual do SIGAA UFG.
 }
 ```
 
-| Campo | Descricao |
-|---|---|
-| `status` | `online`, `degraded` ou `offline` |
-| `confirmed` | `false` se houve apenas 1 falha (possivel flap de rede) |
-| `consecutiveFailures` | Quantas falhas consecutivas ate agora |
-| `currentIncident` | Incidente em andamento, se houver |
+| Campo                 | Descricao                                               |
+| --------------------- | ------------------------------------------------------- |
+| `status`              | `online`, `degraded` ou `offline`                       |
+| `confirmed`           | `false` se houve apenas 1 falha (possivel flap de rede) |
+| `consecutiveFailures` | Quantas falhas consecutivas ate agora                   |
+| `currentIncident`     | Incidente em andamento, se houver                       |
 
 ### `GET /api/history?period=24h|7d|30d`
 
@@ -86,3 +86,9 @@ sigaa-caiu-ufg/
 ## Issues e sugestoes
 
 Abra uma [issue](https://github.com/m9tzin/sigaa-caiu-ufg/issues) se encontrar um bug ou tiver uma sugestao.
+
+## Licenca e creditos
+
+Este projeto e open source sob a licenca [MIT](LICENSE) — voce pode usar, modificar e fazer fork livremente.
+
+Baseado no projeto original [sigaacaiu.com](https://sigaacaiu.com) por [trindadetiago](https://github.com/trindadetiago/sigaa-caiu).
