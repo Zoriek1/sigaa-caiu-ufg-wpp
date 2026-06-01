@@ -99,7 +99,8 @@ export function UptimeBars({ history, stats, incidents }: Props) {
         {days.map((day, i) => (
           <div
             key={i}
-            className={`flex-1 h-8 rounded-sm ${barColors[day.status]} transition-all hover:opacity-80`}
+            className={`flex-1 rounded-sm ${barColors[day.status]} transition-all hover:opacity-80`}
+            style={{ height: "32px" }}
             title={`${day.date}: ${day.status === "empty" ? "sem dados" : day.status}`}
           />
         ))}
