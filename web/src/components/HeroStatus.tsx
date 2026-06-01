@@ -27,104 +27,43 @@ const ONLINE_RESPONSES = [
 
 // "O SIGAA caiu?" → Ainda não, mas ta lento...
 const SLOW_RESPONSES = [
-  {
-    emoji: "🐌",
-    text: "Ainda nao, mas...",
-    sub: "Ta taaao lento que ja ja cai...",
-  },
+  { emoji: "🐌", text: "Ainda nao, mas...", sub: "Ta taaao lento que ja ja cai..." },
   { emoji: "😮‍💨", text: "Nao, mas quase", sub: "Ta mais lento que fila do RU." },
-  {
-    emoji: "🐢",
-    text: "Mais ou menos",
-    sub: "Ta funcionando em camara lenta.",
-  },
+  { emoji: "🐢", text: "Mais ou menos", sub: "Ta funcionando em camara lenta." },
   { emoji: "⏳", text: "Nao... ainda", sub: "Pega um cafe enquanto carrega." },
-  {
-    emoji: "🦥",
-    text: "Nao, mas ta arrastando",
-    sub: "Mais lento que matricula em periodo.",
-  },
+  { emoji: "🦥", text: "Nao, mas ta arrastando", sub: "Mais lento que matricula em periodo." },
 
   /* World Cup Responses */
-  {
-    emoji: "🇧🇷",
-    text: "Nao, mas ta na torcida",
-    sub: "Um olho no jogo, outro no sistema.",
-  },
+  { emoji: "🇧🇷", text: "Nao, mas ta na torcida", sub: "Um olho no jogo, outro no sistema." },
 ];
 
 // "O SIGAA caiu?" → Sim!
 const DOWN_RESPONSES = [
-  {
-    emoji: "👎",
-    text: "Sim, caiu",
-    sub: "F no chat. Vai tomar um cafe e volta depois.",
-  },
+  { emoji: "👎", text: "Sim, caiu", sub: "F no chat. Vai tomar um cafe e volta depois." },
   { emoji: "💀", text: "Sim, morreu", sub: "Descanse em paz, SIGAA." },
   { emoji: "👎", text: "Sim", sub: "Surpresa de ninguem." },
   { emoji: "😭", text: "Sim...", sub: "Era previsivel, ne?" },
-  {
-    emoji: "🪦",
-    text: "Sim, foi de base",
-    sub: "Causa da morte: ser o SIGAA.",
-  },
+  { emoji: "🪦", text: "Sim, foi de base", sub: "Causa da morte: ser o SIGAA." },
 
   /* World Cup Responses */
-  {
-    emoji: "🇧🇷",
-    text: "Sim, foi ver o jogo!",
-    sub: "O SIGAA foi assistir o Brasil jogar. Volta depois do apito final.",
-  },
-  {
-    emoji: "🎊🇧🇷",
-    text: "Caiu de emocao!",
-    sub: "Nao segurou o gol e foi junto. Volta quando se recuperar.",
-  },
+  { emoji: "🇧🇷", text: "Sim, foi ver o jogo!", sub: "O SIGAA foi assistir o Brasil jogar. Volta depois do apito final." },
+  { emoji: "🎊🇧🇷", text: "Caiu de emocao!", sub: "Nao segurou o gol e foi junto. Volta quando se recuperar." },
 ];
 
 const CHECKING_RESPONSES = [
-  {
-    emoji: "🤔",
-    text: "Hmm...",
-    sub: "Parece que oscilou. Verificando se caiu mesmo...",
-  },
-  {
-    emoji: "👀",
-    text: "Calma ai...",
-    sub: "To olhando, parece que deu uma tremida.",
-  },
+  { emoji: "🤔", text: "Hmm...", sub: "Parece que oscilou. Verificando se caiu mesmo..." },
+  { emoji: "👀", text: "Calma ai...", sub: "To olhando, parece que deu uma tremida." },
   { emoji: "🔍", text: "Investigando...", sub: "Pode ter sido so um soluço." },
 ];
 
 const RECOVERING_RESPONSES = [
-  {
-    emoji: "🤞",
-    text: "Parece que voltou",
-    sub: "Mas nao confia nao, caiu agora pouco.",
-  },
-  {
-    emoji: "👀",
-    text: "Voltou... sera?",
-    sub: "Ainda ta quente, fica de olho.",
-  },
-  {
-    emoji: "😅",
-    text: "Voltou, mas...",
-    sub: "Acabou de cair. Nao bota muita fe nao.",
-  },
-  {
-    emoji: "⚠️",
-    text: "Ta no ar de novo",
-    sub: "Caiu faz pouco, pode oscilar ainda.",
-  },
+  { emoji: "🤞", text: "Parece que voltou", sub: "Mas nao confia nao, caiu agora pouco." },
+  { emoji: "👀", text: "Voltou... sera?", sub: "Ainda ta quente, fica de olho." },
+  { emoji: "😅", text: "Voltou, mas...", sub: "Acabou de cair. Nao bota muita fe nao." },
+  { emoji: "⚠️", text: "Ta no ar de novo", sub: "Caiu faz pouco, pode oscilar ainda." },
 ];
 
-export function HeroStatus({
-  data,
-  error,
-  daysSinceLastIncident,
-  incidents,
-}: Props) {
+export function HeroStatus({ data, error, daysSinceLastIncident, incidents }: Props) {
   const recentlyRecovered = useMemo(() => {
     if (!incidents || incidents.length === 0) return false;
     const lastIncident = incidents[0];
@@ -146,7 +85,7 @@ export function HeroStatus({
     if (isChecking) return pickRandom(CHECKING_RESPONSES);
     if (recentlyRecovered) return pickRandom(RECOVERING_RESPONSES);
     return pickRandom(ONLINE_RESPONSES);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data?.status, data?.confirmed, error, recentlyRecovered]);
 
   if (error) {
@@ -202,19 +141,12 @@ export function HeroStatus({
         )}
       </p>
 
-      {daysSinceLastIncident !== null &&
-        daysSinceLastIncident > 0 &&
-        data.status !== "offline" && (
-          <p className="mt-6 text-sm text-neutral-400">
-            Estamos ha{" "}
-            <span className="font-semibold text-neutral-600">
-              {daysSinceLastIncident}{" "}
-              {daysSinceLastIncident === 1 ? "dia" : "dias"}
-            </span>{" "}
-            sem o SIGAA cair
-            <span className="ml-1 text-neutral-300">#iLoveSigaa</span>
-          </p>
-        )}
+      {daysSinceLastIncident !== null && daysSinceLastIncident > 0 && data.status !== "offline" && (
+        <p className="mt-6 text-sm text-neutral-400">
+          Estamos ha <span className="font-semibold text-neutral-600">{daysSinceLastIncident} {daysSinceLastIncident === 1 ? "dia" : "dias"}</span> sem o SIGAA cair
+          <span className="ml-1 text-neutral-300">#iLoveSigaa</span>
+        </p>
+      )}
 
       <p className="text-xs text-neutral-400 mt-4">
         Ultimo check: {timeAgo(data.lastCheck.timestamp)}
