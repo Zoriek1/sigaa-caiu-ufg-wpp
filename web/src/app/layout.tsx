@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { ThemeProvider } from "@/lib/ThemeContext";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
   },
   metadataBase: new URL("https://ufg.sigaacaiu.com"),
   openGraph: {
-    title: "SIGAA Caiu? — O SIGAA da UFG ta no ar?",
+    title: "SIGAA Caiu? — O SIGAA da UFG tá no ar?",
     description:
       "Monitor em tempo real do SIGAA da UFG. Veja se o sistema esta no ar, lento ou fora do ar.",
     url: "https://ufg.sigaacaiu.com",
@@ -56,11 +57,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `try{var t=localStorage.getItem('theme');if(t==='sigaa')document.documentElement.setAttribute('data-theme','sigaa')}catch(e){}` }} />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-neutral-900 min-h-screen`}
       >
-        {children}
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
         <Analytics />
       </body>
     </html>
