@@ -2,7 +2,7 @@
 
 Monitor em tempo real do [SIGAA da UFG](https://sigaa.sistemas.ufg.br). Verifica automaticamente se o sistema esta no ar, lento ou fora do ar a cada 3 minutos.
 
-**Site:** [sigaa-caiu-ufg.vercel.app](https://sigaa-caiu-ufg.vercel.app)
+**Site:** [ufg.sigaacaiu.com](ufg.sigaacaiu.com)
 
 Fork de [trindadetiago/sigaa-caiu](https://github.com/trindadetiago/sigaa-caiu) adaptado para a UFG.
 

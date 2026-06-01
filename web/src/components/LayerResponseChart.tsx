@@ -12,6 +12,7 @@ import {
   Legend,
 } from "recharts";
 import type { HistoryResponse } from "@/lib/types";
+import { institutionalTheme } from "@/lib/institutionalTheme";
 
 type Period = "24h" | "7d" | "30d";
 
@@ -58,20 +59,18 @@ export function LayerResponseChart({ histories }: Props) {
   );
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-medium text-neutral-700">
-          Tempo de resposta por camada
-        </h3>
+    <div className="institutional-panel">
+      <div className="institutional-panel-header flex items-center justify-between">
+        <span>Tempo de resposta por camada</span>
         <div className="flex gap-1">
           {(["24h", "7d", "30d"] as Period[]).map((p) => (
             <button
               key={p}
               onClick={() => setPeriod(p)}
-              className={`px-3 py-1 text-xs rounded-md transition-colors ${
+              className={`px-2 py-0.5 text-xs border transition-colors ${
                 period === p
-                  ? "bg-neutral-200 text-neutral-900"
-                  : "text-neutral-400 hover:text-neutral-600"
+                  ? "bg-sigaa-primary text-white border-sigaa-primary"
+                  : "bg-white text-sigaa-primary border-sigaa-border-blue hover:bg-sigaa-secondary"
               }`}
             >
               {p}
@@ -80,63 +79,66 @@ export function LayerResponseChart({ histories }: Props) {
         </div>
       </div>
 
-      {data.length === 0 || activeLayers.length === 0 ? (
-        <div className="h-48 flex items-center justify-center text-neutral-400 text-sm">
-          Sem dados para este periodo
-        </div>
-      ) : (
-        <ResponsiveContainer width="100%" height={260}>
-          <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
-            <XAxis
-              dataKey="time"
-              tick={{ fontSize: 11, fill: "#a3a3a3" }}
-              tickLine={false}
-              interval="preserveStartEnd"
-            />
-            <YAxis
-              tick={{ fontSize: 11, fill: "#a3a3a3" }}
-              tickLine={false}
-              axisLine={false}
-              tickFormatter={(v) => formatMs(v)}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "#fff",
-                border: "1px solid #e5e5e5",
-                borderRadius: 8,
-                fontSize: 12,
-              }}
-              formatter={(value, name) => {
-                const v = Number(value);
-                const layer = LAYERS.find((l) => l.key === name);
-                return [formatMs(v), layer?.label ?? String(name)];
-              }}
-            />
-            <Legend
-              iconType="circle"
-              iconSize={8}
-              wrapperStyle={{ fontSize: 12, color: "#737373" }}
-              formatter={(value: string) => {
-                const layer = LAYERS.find((l) => l.key === value);
-                return layer?.label ?? value;
-              }}
-            />
-            {activeLayers.map((layer) => (
-              <Line
-                key={layer.key}
-                type="monotone"
-                dataKey={layer.key}
-                stroke={layer.color}
-                strokeWidth={2}
-                dot={false}
-                activeDot={{ r: 4 }}
-                connectNulls
+      <div className="p-4">
+        {data.length === 0 || activeLayers.length === 0 ? (
+          <div className="h-48 flex items-center justify-center text-sigaa-muted text-sm">
+            Sem dados para este periodo
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={260}>
+            <LineChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" stroke={institutionalTheme.colors.borders.default} />
+              <XAxis
+                dataKey="time"
+                tick={{ fontSize: 11, fill: institutionalTheme.colors.text.muted }}
+                tickLine={false}
+                interval="preserveStartEnd"
               />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
-      )}
+              <YAxis
+                tick={{ fontSize: 11, fill: institutionalTheme.colors.text.muted }}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(v) => formatMs(v)}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: institutionalTheme.colors.panelBackground,
+                  border: `1px solid ${institutionalTheme.colors.borders.default}`,
+                  borderRadius: 2,
+                  fontSize: 12,
+                  color: institutionalTheme.colors.text.main,
+                }}
+                formatter={(value, name) => {
+                  const v = Number(value);
+                  const layer = LAYERS.find((l) => l.key === name);
+                  return [formatMs(v), layer?.label ?? String(name)];
+                }}
+              />
+              <Legend
+                iconType="square"
+                iconSize={8}
+                wrapperStyle={{ fontSize: 12, color: institutionalTheme.colors.text.muted }}
+                formatter={(value: string) => {
+                  const layer = LAYERS.find((l) => l.key === value);
+                  return layer?.label ?? value;
+                }}
+              />
+              {activeLayers.map((layer) => (
+                <Line
+                  key={layer.key}
+                  type="monotone"
+                  dataKey={layer.key}
+                  stroke={layer.color}
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{ r: 4 }}
+                  connectNulls
+                />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
+        )}
+      </div>
     </div>
   );
 }
