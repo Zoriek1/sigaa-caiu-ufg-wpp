@@ -33,6 +33,7 @@ const SLOW_RESPONSES = [
   { emoji: "🐢", text: "Mais ou menos", sub: "Ta funcionando em camara lenta." },
   { emoji: "⏳", text: "Nao... ainda", sub: "Pega um cafe enquanto carrega." },
   { emoji: "🦥", text: "Nao, mas ta arrastando", sub: "Mais lento que matricula em periodo." },
+  { emoji: "🍜", text: "Quase...", sub: "Foi so pegar marmita no RU" },
 ];
 
 // "O SIGAA caiu?" → Sim!
@@ -42,12 +43,16 @@ const DOWN_RESPONSES = [
   { emoji: "👎", text: "Sim", sub: "Surpresa de ninguem." },
   { emoji: "😭", text: "Sim...", sub: "Era previsivel, ne?" },
   { emoji: "🪦", text: "Sim, foi de base", sub: "Causa da morte: ser o SIGAA." },
+  { emoji: "📚", text: "Caiu!", sub: "Deve estar fazendo prova" },
+  { emoji: "😈", text: "HAHAHAHAH (Caiu)", sub: "ADIVINHA QUEM PERDEU A ENTREGA DO TRABALHO (Voce)" },
 ];
 
 const CHECKING_RESPONSES = [
   { emoji: "🤔", text: "Hmm...", sub: "Parece que oscilou. Verificando se caiu mesmo..." },
   { emoji: "👀", text: "Calma ai...", sub: "To olhando, parece que deu uma tremida." },
   { emoji: "🔍", text: "Investigando...", sub: "Pode ter sido so um soluço." },
+  { emoji: "🧐", text: "Curioso... ", sub: "Agora ha pouco eu estava no reCAPTCHA" },
+  { emoji: "😅", text: "Espera um pouco...", sub: "Ele pode estar preparando uma pegadinha" },
 ];
 
 const RECOVERING_RESPONSES = [
@@ -55,6 +60,7 @@ const RECOVERING_RESPONSES = [
   { emoji: "👀", text: "Voltou... sera?", sub: "Ainda ta quente, fica de olho." },
   { emoji: "😅", text: "Voltou, mas...", sub: "Acabou de cair. Nao bota muita fe nao." },
   { emoji: "⚠️", text: "Ta no ar de novo", sub: "Caiu faz pouco, pode oscilar ainda." },
+  { emoji: "👻", text: "Surpresa!", sub: "Era so pra passar um susto rsrs." },
 ];
 
 export function HeroStatus({ data, error, daysSinceLastIncident, incidents }: Props) {
