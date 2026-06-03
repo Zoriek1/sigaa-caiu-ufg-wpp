@@ -88,7 +88,7 @@ export async function manageIncidents(
 export async function cleanupOldChecks(db: D1Database): Promise<void> {
   await db.batch([
     db.prepare(`DELETE FROM checks WHERE timestamp < datetime('now', '-730 days')`),
-    db.prepare(`DELETE FROM other_service_checks WHERE timestamp < datetime('now', '-7 days')`),
+    db.prepare(`DELETE FROM other_service_checks WHERE timestamp < datetime('now', '-30 days')`),
   ]);
 }
 
@@ -106,9 +106,9 @@ export async function saveOtherServiceChecks(
 
 export async function getOtherServiceHistoryRaw(
   db: D1Database,
-  period: "24h" | "7d"
+  period: "24h" | "7d" | "30d"
 ): Promise<RawOtherServiceRow[]> {
-  const interval = period === "7d" ? "-7 days" : "-24 hours";
+  const interval = period === "30d" ? "-30 days" : period === "7d" ? "-7 days" : "-24 hours";
   const result = await db
     .prepare(
       `SELECT timestamp, service_id, response_time_ms

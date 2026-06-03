@@ -16,7 +16,7 @@ import { fetchOtherServicesHistory } from "@/lib/api";
 import { useTheme } from "@/lib/ThemeContext";
 import { institutionalTheme } from "@/lib/institutionalTheme";
 
-type Period = "24h" | "7d";
+type Period = "24h" | "7d" | "30d";
 
 const SERVICES = [
   { key: "ru_ms" as const, label: "Site do RU", color: "#f97316" },
@@ -40,7 +40,7 @@ export function OtherServicesChart() {
   const { theme } = useTheme();
   const isSigaa = theme === "sigaa";
   const [period, setPeriod] = useState<Period>("24h");
-  const [histories, setHistories] = useState<Record<Period, OtherServicesHistoryCheck[] | null>>({ "24h": null, "7d": null });
+  const [histories, setHistories] = useState<Record<Period, OtherServicesHistoryCheck[] | null>>({ "24h": null, "7d": null, "30d": null });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -60,7 +60,7 @@ export function OtherServicesChart() {
 
   const activeServices = SERVICES.filter(s => data.some(d => d[s.key] != null));
 
-  const periodButtons = (["24h", "7d"] as Period[]).map(p => (
+  const periodButtons = (["24h", "7d", "30d"] as Period[]).map(p => (
     <button
       key={p}
       onClick={() => setPeriod(p)}
