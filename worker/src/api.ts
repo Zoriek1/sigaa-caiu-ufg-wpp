@@ -44,8 +44,8 @@ export async function handleApiRequest(
 
   if (path === "/api/other-services/history") {
     const period = url.searchParams.get("period") || "24h";
-    if (period !== "24h" && period !== "7d") {
-      return json({ error: "Invalid period. Use: 24h, 7d" }, 400);
+    if (period !== "24h" && period !== "7d" && period !== "30d") {
+      return json({ error: "Invalid period. Use: 24h, 7d, 30d" }, 400);
     }
     return handleOtherServicesHistory(env, period);
   }
@@ -120,9 +120,9 @@ async function handleIncidents(env: Env): Promise<Response> {
   return json({ incidents });
 }
 
-async function handleOtherServicesHistory(env: Env, period: "24h" | "7d"): Promise<Response> {
+async function handleOtherServicesHistory(env: Env, period: "24h" | "7d" | "30d"): Promise<Response> {
   const rows = await getOtherServiceHistoryRaw(env.DB, period);
-  const bucketMinutes = period === "7d" ? 15 : 3;
+  const bucketMinutes = period === "30d" ? 60 : period === "7d" ? 15 : 3;
   const checks = pivotOtherServiceRows(rows, bucketMinutes);
   return json({ period, checks });
 }

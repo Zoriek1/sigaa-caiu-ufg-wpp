@@ -39,6 +39,6 @@ export function fetchOtherServices(): Promise<OtherServicesResponse> {
   return fetchApi("/api/other-services");
 }
 
-export function fetchOtherServicesHistory(period: "24h" | "7d"): Promise<OtherServicesHistoryResponse> {
+export function fetchOtherServicesHistory(period: "24h" | "7d" | "30d"): Promise<OtherServicesHistoryResponse> {
   return fetchApi(`/api/other-services/history?period=${period}`);
 }
