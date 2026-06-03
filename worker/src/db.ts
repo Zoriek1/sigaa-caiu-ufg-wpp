@@ -6,6 +6,7 @@ import type {
   LayerStatus,
   OtherServiceCheckResult,
   OtherServiceRow,
+  RawOtherServiceRow,
 } from "./types";
 
 // --- Write operations ---
@@ -101,6 +102,23 @@ export async function saveOtherServiceChecks(
      VALUES (?, ?, ?, ?, ?)`
   );
   await db.batch(results.map(r => stmt.bind(r.serviceId, r.status, r.httpCode, r.responseTimeMs, r.error)));
+}
+
+export async function getOtherServiceHistoryRaw(
+  db: D1Database,
+  period: "24h" | "7d"
+): Promise<RawOtherServiceRow[]> {
+  const interval = period === "7d" ? "-7 days" : "-24 hours";
+  const result = await db
+    .prepare(
+      `SELECT timestamp, service_id, response_time_ms
+       FROM other_service_checks
+       WHERE timestamp >= datetime('now', ?)
+       ORDER BY timestamp ASC`
+    )
+    .bind(interval)
+    .all<RawOtherServiceRow>();
+  return result.results;
 }
 
 export async function getLatestOtherServiceChecks(

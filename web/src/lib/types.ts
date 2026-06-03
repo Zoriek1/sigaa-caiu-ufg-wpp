@@ -85,3 +85,14 @@ export interface OtherService {
 export interface OtherServicesResponse {
   services: OtherService[];
 }
+
+export interface OtherServicesHistoryCheck {
+  timestamp: string;
+  ru_ms: number | null;
+  sophia_ms: number | null;
+}
+
+export interface OtherServicesHistoryResponse {
+  period: string;
+  checks: OtherServicesHistoryCheck[];
+}

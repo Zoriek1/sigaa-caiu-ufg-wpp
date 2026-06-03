@@ -101,6 +101,12 @@ export interface OtherServiceRow {
   error: string | null;
 }
 
+export interface RawOtherServiceRow {
+  timestamp: string;
+  service_id: string;
+  response_time_ms: number;
+}
+
 export interface Env {
   DB: D1Database;
   TELEGRAM_BOT_TOKEN?: string;
