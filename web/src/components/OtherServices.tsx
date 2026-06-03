@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { OtherService } from "@/lib/types";
 import { timeAgo, formatMs } from "@/lib/utils";
+import { OtherServicesChart } from "@/components/OtherServicesChart";
 
 interface Props {
   services: OtherService[] | null;
@@ -90,10 +91,15 @@ export function OtherServices({ services }: Props) {
       </button>
 
       {open && (
-        <div className="border-t border-neutral-200 px-4 divide-y divide-neutral-100">
-          {services.map(svc => (
-            <ServiceRow key={svc.id} svc={svc} />
-          ))}
+        <div className="border-t border-neutral-200">
+          <div className="px-4 divide-y divide-neutral-100">
+            {services.map(svc => (
+              <ServiceRow key={svc.id} svc={svc} />
+            ))}
+          </div>
+          <div className="border-t border-neutral-200 p-4">
+            <OtherServicesChart />
+          </div>
         </div>
       )}
     </div>

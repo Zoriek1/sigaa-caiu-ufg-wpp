@@ -1,4 +1,4 @@
-import type { Env } from "./types";
+import type { Env, RawOtherServiceRow } from "./types";
 import {
   getLastNChecks,
   getOpenIncident,
@@ -7,6 +7,7 @@ import {
   getRecentIncidents,
   getLastKnownLayers,
   getLatestOtherServiceChecks,
+  getOtherServiceHistoryRaw,
 } from "./db";
 import { OTHER_SERVICES } from "./other-services";
 
@@ -39,6 +40,14 @@ export async function handleApiRequest(
 
   if (path === "/api/other-services") {
     return handleOtherServices(env);
+  }
+
+  if (path === "/api/other-services/history") {
+    const period = url.searchParams.get("period") || "24h";
+    if (period !== "24h" && period !== "7d") {
+      return json({ error: "Invalid period. Use: 24h, 7d" }, 400);
+    }
+    return handleOtherServicesHistory(env, period);
   }
 
   if (path === "/") {
@@ -109,6 +118,44 @@ async function handleStats(env: Env): Promise<Response> {
 async function handleIncidents(env: Env): Promise<Response> {
   const incidents = await getRecentIncidents(env.DB);
   return json({ incidents });
+}
+
+async function handleOtherServicesHistory(env: Env, period: "24h" | "7d"): Promise<Response> {
+  const rows = await getOtherServiceHistoryRaw(env.DB, period);
+  const bucketMinutes = period === "7d" ? 15 : 3;
+  const checks = pivotOtherServiceRows(rows, bucketMinutes);
+  return json({ period, checks });
+}
+
+function bucketTs(ts: string, bucketMinutes: number): string {
+  const d = new Date(ts);
+  d.setUTCMinutes(Math.floor(d.getUTCMinutes() / bucketMinutes) * bucketMinutes, 0, 0);
+  return d.toISOString().replace(/\.\d{3}Z$/, "Z");
+}
+
+function pivotOtherServiceRows(
+  rows: RawOtherServiceRow[],
+  bucketMinutes: number
+): { timestamp: string; ru_ms: number | null; sophia_ms: number | null }[] {
+  const buckets = new Map<string, Record<string, { sum: number; count: number }>>();
+
+  for (const row of rows) {
+    const ts = bucketTs(row.timestamp, bucketMinutes);
+    if (!buckets.has(ts)) buckets.set(ts, {});
+    const b = buckets.get(ts)!;
+    const key = `${row.service_id}_ms`;
+    if (!b[key]) b[key] = { sum: 0, count: 0 };
+    b[key].sum += row.response_time_ms;
+    b[key].count++;
+  }
+
+  return Array.from(buckets.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([ts, b]) => ({
+      timestamp: ts,
+      ru_ms: b.ru_ms ? Math.round(b.ru_ms.sum / b.ru_ms.count) : null,
+      sophia_ms: b.sophia_ms ? Math.round(b.sophia_ms.sum / b.sophia_ms.count) : null,
+    }));
 }
 
 async function handleOtherServices(env: Env): Promise<Response> {
