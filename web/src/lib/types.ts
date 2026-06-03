@@ -70,3 +70,18 @@ export interface StatsResponse {
 export interface IncidentsResponse {
   incidents: Incident[];
 }
+
+export interface OtherService {
+  id: string;
+  name: string;
+  url: string;
+  status: Status;
+  httpCode: number | null;
+  responseTimeMs: number | null;
+  timestamp: string | null;
+  error: string | null;
+}
+
+export interface OtherServicesResponse {
+  services: OtherService[];
+}

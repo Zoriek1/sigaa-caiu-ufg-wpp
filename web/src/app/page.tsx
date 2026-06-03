@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { HeroStatus } from "@/components/HeroStatus";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LayerDetails } from "@/components/LayerDetails";
+import { OtherServices } from "@/components/OtherServices";
 import { UptimeBars } from "@/components/UptimeBars";
 import { ResponseTimeChart } from "@/components/ResponseTimeChart";
 import { IncidentsList } from "@/components/IncidentsList";
@@ -12,12 +13,14 @@ import {
   fetchHistory,
   fetchStats,
   fetchIncidents,
+  fetchOtherServices,
 } from "@/lib/api";
 import type {
   StatusResponse,
   HistoryResponse,
   StatsResponse,
   Incident,
+  OtherService,
 } from "@/lib/types";
 
 type Period = "24h" | "7d" | "30d";
@@ -27,6 +30,7 @@ export default function Home() {
   const [status, setStatus] = useState<StatusResponse | null>(null);
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [incidents, setIncidents] = useState<Incident[] | null>(null);
+  const [otherServices, setOtherServices] = useState<OtherService[] | null>(null);
   const [histories, setHistories] = useState<
     Record<AllPeriod, HistoryResponse | null>
   >({ "24h": null, "7d": null, "30d": null, "90d": null });
@@ -41,11 +45,12 @@ export default function Home() {
 
   const loadData = useCallback(async () => {
     try {
-      const [statusRes, statsRes, incidentsRes, h24, h7d, h30d, h90d] =
+      const [statusRes, statsRes, incidentsRes, otherServicesRes, h24, h7d, h30d, h90d] =
         await Promise.all([
           fetchStatus(),
           fetchStats(),
           fetchIncidents(),
+          fetchOtherServices(),
           fetchHistory("24h"),
           fetchHistory("7d"),
           fetchHistory("30d"),
@@ -55,6 +60,7 @@ export default function Home() {
       setStatus(statusRes);
       setStats(statsRes);
       setIncidents(incidentsRes.incidents);
+      setOtherServices(otherServicesRes.services);
       setHistories({ "24h": h24, "7d": h7d, "30d": h30d, "90d": h90d });
       setError(false);
     } catch {
@@ -94,6 +100,7 @@ export default function Home() {
         <UptimeBars history={histories["90d"]} stats={stats} incidents={incidents} />
         <ResponseTimeChart histories={histories} />
         <LayerDetails layers={status?.layers} histories={histories} />
+        <OtherServices services={otherServices} />
         <IncidentsList incidents={incidents} />
 
         <footer className="text-center pt-8 text-xs text-neutral-400 flex flex-col items-center gap-3">

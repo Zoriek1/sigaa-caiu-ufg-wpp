@@ -3,6 +3,7 @@ import type {
   HistoryResponse,
   StatsResponse,
   IncidentsResponse,
+  OtherServicesResponse,
 } from "./types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8787";
@@ -31,4 +32,8 @@ export function fetchStats(): Promise<StatsResponse> {
 
 export function fetchIncidents(): Promise<IncidentsResponse> {
   return fetchApi("/api/incidents");
+}
+
+export function fetchOtherServices(): Promise<OtherServicesResponse> {
+  return fetchApi("/api/other-services");
 }

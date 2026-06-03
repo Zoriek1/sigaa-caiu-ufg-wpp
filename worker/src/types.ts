@@ -77,6 +77,30 @@ export interface LastKnownLayers {
   loginE2e: LastKnownLayer | null;
 }
 
+export interface OtherServiceDef {
+  id: string;
+  name: string;
+  url: string;
+}
+
+export interface OtherServiceCheckResult {
+  serviceId: string;
+  status: Status;
+  httpCode: number | null;
+  responseTimeMs: number;
+  error: string | null;
+}
+
+export interface OtherServiceRow {
+  id: number;
+  timestamp: string;
+  service_id: string;
+  status: Status;
+  http_code: number | null;
+  response_time_ms: number;
+  error: string | null;
+}
+
 export interface Env {
   DB: D1Database;
   TELEGRAM_BOT_TOKEN?: string;

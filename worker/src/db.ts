@@ -4,6 +4,8 @@ import type {
   IncidentRow,
   LastKnownLayers,
   LayerStatus,
+  OtherServiceCheckResult,
+  OtherServiceRow,
 } from "./types";
 
 // --- Write operations ---
@@ -83,9 +85,39 @@ export async function manageIncidents(
 }
 
 export async function cleanupOldChecks(db: D1Database): Promise<void> {
-  await db
-    .prepare(`DELETE FROM checks WHERE timestamp < datetime('now', '-730 days')`)
-    .run();
+  await db.batch([
+    db.prepare(`DELETE FROM checks WHERE timestamp < datetime('now', '-730 days')`),
+    db.prepare(`DELETE FROM other_service_checks WHERE timestamp < datetime('now', '-7 days')`),
+  ]);
+}
+
+export async function saveOtherServiceChecks(
+  db: D1Database,
+  results: OtherServiceCheckResult[]
+): Promise<void> {
+  if (results.length === 0) return;
+  const stmt = db.prepare(
+    `INSERT INTO other_service_checks (service_id, status, http_code, response_time_ms, error)
+     VALUES (?, ?, ?, ?, ?)`
+  );
+  await db.batch(results.map(r => stmt.bind(r.serviceId, r.status, r.httpCode, r.responseTimeMs, r.error)));
+}
+
+export async function getLatestOtherServiceChecks(
+  db: D1Database
+): Promise<OtherServiceRow[]> {
+  const result = await db
+    .prepare(
+      `SELECT t.* FROM other_service_checks t
+       INNER JOIN (
+         SELECT service_id, MAX(timestamp) AS max_ts
+         FROM other_service_checks
+         GROUP BY service_id
+       ) latest ON t.service_id = latest.service_id AND t.timestamp = latest.max_ts
+       ORDER BY t.service_id`
+    )
+    .all<OtherServiceRow>();
+  return result.results;
 }
 
 // --- Read operations ---

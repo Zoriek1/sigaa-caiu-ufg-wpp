@@ -6,7 +6,9 @@ import {
   getStats,
   getRecentIncidents,
   getLastKnownLayers,
+  getLatestOtherServiceChecks,
 } from "./db";
+import { OTHER_SERVICES } from "./other-services";
 
 export async function handleApiRequest(
   request: Request,
@@ -33,6 +35,10 @@ export async function handleApiRequest(
 
   if (path === "/api/incidents") {
     return handleIncidents(env);
+  }
+
+  if (path === "/api/other-services") {
+    return handleOtherServices(env);
   }
 
   if (path === "/") {
@@ -103,6 +109,24 @@ async function handleStats(env: Env): Promise<Response> {
 async function handleIncidents(env: Env): Promise<Response> {
   const incidents = await getRecentIncidents(env.DB);
   return json({ incidents });
+}
+
+async function handleOtherServices(env: Env): Promise<Response> {
+  const rows = await getLatestOtherServiceChecks(env.DB);
+  const services = OTHER_SERVICES.map(def => {
+    const row = rows.find(r => r.service_id === def.id);
+    return {
+      id: def.id,
+      name: def.name,
+      url: def.url,
+      status: row?.status ?? "unknown",
+      httpCode: row?.http_code ?? null,
+      responseTimeMs: row?.response_time_ms ?? null,
+      timestamp: row?.timestamp ?? null,
+      error: row?.error ?? null,
+    };
+  });
+  return json({ services });
 }
 
 const DOCS_HTML = `<!DOCTYPE html>

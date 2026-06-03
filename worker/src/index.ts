@@ -1,6 +1,7 @@
 import type { Env } from "./types";
 import { performHealthCheck } from "./health";
-import { saveCheck, getLastNChecks, manageIncidents, cleanupOldChecks } from "./db";
+import { saveCheck, getLastNChecks, manageIncidents, cleanupOldChecks, saveOtherServiceChecks } from "./db";
+import { checkAllOtherServices } from "./other-services";
 import { notifyIfNeeded } from "./notify";
 import { handleApiRequest } from "./api";
 import { withCors, handlePreflight } from "./cors";
@@ -24,10 +25,16 @@ export default {
       if (!lastWasOffline) return; // healthy — skip this tick
     }
 
-    const result = await performHealthCheck(env, true);
+    const [result, otherResults] = await Promise.all([
+      performHealthCheck(env, true),
+      checkAllOtherServices(),
+    ]);
     const lastChecks = await getLastNChecks(env.DB, 2);
 
-    await saveCheck(env.DB, result);
+    await Promise.all([
+      saveCheck(env.DB, result),
+      saveOtherServiceChecks(env.DB, otherResults),
+    ]);
     await manageIncidents(env.DB, result, lastChecks);
     ctx.waitUntil(notifyIfNeeded(env, result, lastChecks));
 
