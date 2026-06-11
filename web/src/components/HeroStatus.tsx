@@ -25,8 +25,14 @@ const ONLINE_RESPONSES = [
   { emoji: "🙏",    text: "Nao!",             sub: "Gracas a Deus e a CERCOMP." },
   { emoji: "👍",    text: "Nao!",             sub: "Nao, voce nao ta sonhando." },
   /* World Cup */
-  { emoji: "🇧🇷⚽", text: "Nao, ta firme!",   sub: "Aguentou o gol, o VAR e a revisao." },
-  { emoji: "🏆🇧🇷", text: "Nao, ta de pe!",   sub: "Sobreviveu ate a prorrogacao." },
+  { emoji: "🇧🇷⚽", text: "Nao, ta firme!",        sub: "Aguentou o gol, o VAR e a revisao." },
+  { emoji: "🏆🇧🇷", text: "Nao, ta de pe!",         sub: "Sobreviveu ate a prorrogacao." },
+  { emoji: "⚽✅",   text: "Nao, fez o gol!",        sub: "Chutou no angulo e foi. Penta SIGAA!" },
+  { emoji: "🇧🇷🏃", text: "Nao, driblou tudo!",     sub: "Passou por cima da instabilidade e ta no ar." },
+  { emoji: "🏟️🇧🇷", text: "Nao, escalado hoje!",    sub: "Saiu como titular e ta rendendo." },
+  { emoji: "🇧🇷🎺", text: "Nao!",                   sub: "Nem a vuvuzela desafinou o servidor hoje." },
+  { emoji: "🥅🇧🇷", text: "Nao, defendeu!",          sub: "Nem o ataque do dia de prova derrubou." },
+  { emoji: "📺🇧🇷", text: "Nao, ta no ar!",          sub: "Jogo comecando, SIGAA funcionando. Dia perfeito." },
 ];
 
 // prettier-ignore
