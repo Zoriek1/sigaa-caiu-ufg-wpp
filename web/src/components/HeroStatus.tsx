@@ -39,7 +39,7 @@ const ONLINE_RESPONSES = [
 const SLOW_RESPONSES = [
   { emoji: "🐌",  text: "Ainda nao, mas...",    sub: "Ta taaao lento que ja ja cai..." },
   { emoji: "😮‍💨", text: "Nao, mas quase",       sub: "Ta mais lento que fila do RU." },
-  { emoji: "🐢",  text: "Mais ou menos",         sub: "Ta funcionando em camara lenta." },
+  { emoji: "🐢",  text: "Mais ou menos",         sub: "Ta funcionando em camera lenta." },
   { emoji: "⏳",  text: "Nao... ainda",          sub: "Pega um cafe enquanto carrega." },
   { emoji: "🦥",  text: "Nao, mas ta arrastando",sub: "Mais lento que matricula em periodo." },
   /* World Cup */
@@ -182,12 +182,12 @@ export function HeroStatus({
                 O SIGAA caiu?
               </div>
               <div className="mb-8 p-4 border border-sigaa-border-default bg-sigaa-background w-full rounded-sm">
-              <div className="text-3xl mb-2">{response.emoji}</div>
-              <div className="font-bold text-sigaa-text">{response.text}</div>
-              <div className="text-sm text-sigaa-muted mt-1">
-                {response.sub}
+                <div className="text-3xl mb-2">{response.emoji}</div>
+                <div className="font-bold text-sigaa-text">{response.text}</div>
+                <div className="text-sm text-sigaa-muted mt-1">
+                  {response.sub}
+                </div>
               </div>
-            </div>
             </>
           )}
 
@@ -221,7 +221,12 @@ export function HeroStatus({
             data?.status !== "offline" &&
             !error && (
               <div className="mt-8 text-xs text-sigaa-muted uppercase tracking-wider">
-                Estamos ha <span className="font-semibold text-sigaa-text">{daysSinceLastIncident} {daysSinceLastIncident === 1 ? "dia" : "dias"}</span> sem incidentes registrados
+                Estamos ha{" "}
+                <span className="font-semibold text-sigaa-text">
+                  {daysSinceLastIncident}{" "}
+                  {daysSinceLastIncident === 1 ? "dia" : "dias"}
+                </span>{" "}
+                sem incidentes registrados
               </div>
             )}
         </div>
@@ -280,7 +285,12 @@ export function HeroStatus({
         daysSinceLastIncident > 0 &&
         data.status !== "offline" && (
           <p className="mt-6 text-sm text-neutral-400">
-            Estamos ha <span className="font-semibold text-neutral-600">{daysSinceLastIncident} {daysSinceLastIncident === 1 ? "dia" : "dias"}</span> sem o SIGAA cair
+            Estamos ha{" "}
+            <span className="font-semibold text-neutral-600">
+              {daysSinceLastIncident}{" "}
+              {daysSinceLastIncident === 1 ? "dia" : "dias"}
+            </span>{" "}
+            sem o SIGAA cair
             <span className="ml-1 text-neutral-300">#iLoveSigaa</span>
           </p>
         )}
