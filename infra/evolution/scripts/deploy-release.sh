@@ -44,7 +44,8 @@ if [ "$deploy_status" -eq 0 ]; then
 fi
 if [ "$deploy_status" -eq 0 ]; then
   set -a
-# shellcheck disable=SC1090 -- the shared production env file is selected at runtime.
+  # The shared production env file is selected at runtime.
+  # shellcheck disable=SC1090
   . "$shared_env"
   set +a
   sh "$release_dir/scripts/healthcheck.sh" || deploy_status=$?
@@ -60,7 +61,8 @@ echo "Evolution deploy failed; starting rollback" >&2
 if [ -n "$previous_release" ] && [ -f "$previous_release/compose.yaml" ]; then
   docker compose --env-file "$shared_env" --file "$previous_release/compose.yaml" up --detach --wait --wait-timeout 300
   set -a
-# shellcheck disable=SC1090 -- the shared production env file is selected at runtime.
+  # The shared production env file is selected at runtime.
+  # shellcheck disable=SC1090
   . "$shared_env"
   set +a
   sh "$previous_release/scripts/healthcheck.sh"

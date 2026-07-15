@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-infra_dir="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
+infra_dir="$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)"
 env_file="${EVOLUTION_ENV_FILE:-$infra_dir/.env}"
 backup_dir="${EVOLUTION_BACKUP_DIR:-$infra_dir/backups}"
 retention_days="${EVOLUTION_BACKUP_RETENTION_DAYS:-7}"
@@ -12,7 +12,8 @@ if [ ! -f "$env_file" ]; then
 fi
 
 set -a
-# shellcheck disable=SC1090 -- the production env file is selected at runtime.
+# The production env file is selected at runtime.
+# shellcheck disable=SC1090
 . "$env_file"
 set +a
 
