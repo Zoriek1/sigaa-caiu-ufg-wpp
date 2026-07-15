@@ -1,0 +1,11 @@
+services:
+  postgres:
+    restart: "no"
+  redis:
+    restart: "no"
+  evolution:
+    restart: "no"
+  dashboard-bootstrap:
+    restart: "no"
+  caddy:
+    restart: "no"
