@@ -1,0 +1,28 @@
+{$EVOLUTION_SITE_ADDRESS} {
+	encode zstd gzip
+
+	@dashboard_bootstrap path /cfgevo /cfgevo/*
+	handle @dashboard_bootstrap {
+		header {
+			Cache-Control "no-store, no-cache, must-revalidate, private"
+			Content-Security-Policy "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self' {$EVOLUTION_PUBLIC_URL}; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+			Permissions-Policy "camera=(), microphone=(), geolocation=()"
+			Referrer-Policy "no-referrer"
+			X-Content-Type-Options "nosniff"
+			X-Frame-Options "DENY"
+			X-Robots-Tag "noindex, nofollow, noarchive"
+		}
+		reverse_proxy dashboard-bootstrap:80
+	}
+
+	handle {
+		header {
+			X-Content-Type-Options "nosniff"
+			Referrer-Policy "strict-origin-when-cross-origin"
+		}
+		@manager path /manager /manager/*
+		header @manager Cache-Control "no-store, no-cache, must-revalidate, private"
+
+		reverse_proxy evolution:8080
+	}
+}

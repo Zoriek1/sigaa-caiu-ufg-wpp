@@ -4,3 +4,6 @@ node_modules
 .vercel
 .env
 .dev.vars
+infra/evolution/.env.ci
+infra/evolution/backups/
+infra/evolution/releases/

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow,noarchive" />
+    <title>Evolution SIGAA</title>
+    <style>
+      :root { color-scheme: dark; font-family: system-ui, sans-serif; }
+      body { min-height: 100vh; margin: 0; display: grid; place-items: center; background: #09090b; color: #fafafa; }
+      main { width: min(30rem, calc(100% - 3rem)); text-align: center; }
+      p { color: #a1a1aa; line-height: 1.5; }
+      [role="alert"] { color: #fca5a5; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Evolution SIGAA</h1>
+      <p id="status">Validando acesso ao dashboard...</p>
+    </main>
+    <script>
+      (async function () {
+        "use strict";
+
+        const baseUrl = "${EVOLUTION_PUBLIC_URL}".replace(/\/+$/, "");
+        const apiKey = "${AUTHENTICATION_API_KEY}";
+        const status = document.getElementById("status");
+        const credentialKeys = [
+          "apiUrl", "token", "version", "clientName", "facebookAppId",
+          "facebookConfigId", "facebookUserToken"
+        ];
+
+        function clearCredentials() {
+          credentialKeys.forEach(function (key) { localStorage.removeItem(key); });
+        }
+
+        try {
+          const serverResponse = await fetch(baseUrl + "/", {
+            credentials: "same-origin",
+            headers: { Accept: "application/json" }
+          });
+          if (!serverResponse.ok) throw new Error("server_unavailable");
+          const server = await serverResponse.json();
+          if (!server.version) throw new Error("invalid_server_response");
+
+          const credentialResponse = await fetch(baseUrl + "/verify-creds", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: { apikey: apiKey, Accept: "application/json" }
+          });
+          if (!credentialResponse.ok) throw new Error("invalid_credentials");
+          const credentials = await credentialResponse.json();
+
+          clearCredentials();
+          localStorage.setItem("apiUrl", baseUrl);
+          localStorage.setItem("token", apiKey);
+          localStorage.setItem("version", String(server.version));
+          if (server.clientName) localStorage.setItem("clientName", String(server.clientName));
+          ["facebookAppId", "facebookConfigId", "facebookUserToken"].forEach(function (key) {
+            if (credentials[key]) localStorage.setItem(key, String(credentials[key]));
+          });
+
+          window.location.replace("/manager/");
+        } catch (_) {
+          clearCredentials();
+          status.textContent = "Não foi possível abrir o dashboard. Verifique a configuração da Evolution.";
+          status.setAttribute("role", "alert");
+        }
+      })();
+    </script>
+  </body>
+</html>
