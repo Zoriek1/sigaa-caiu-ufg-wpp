@@ -100,6 +100,10 @@ chave de API e instancia proprios. Nao reutilize endpoint, credenciais, instanci
 webhooks ou armazenamento de outro projeto. A unica integracao permitida e o
 Worker do SIGAA chamando a Evolution dedicada ao proprio fork.
 
+O stack Docker, o dashboard `/cfgevo`, os testes de infraestrutura e o deploy
+manual estao documentados em
+[`../infra/evolution/README.md`](../infra/evolution/README.md).
+
 Antes do primeiro deploy com a funcionalidade, aplique a migration:
 
 ```bash

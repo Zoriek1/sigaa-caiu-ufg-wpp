@@ -91,8 +91,17 @@ Ultimos 10 incidentes (periodos de indisponibilidade).
 sigaa-caiu-ufg/
 ├── worker/    ← Cloudflare Worker (API + cron + D1)
 ├── web/       ← Next.js (frontend no Vercel)
+├── infra/     ← Evolution API isolada (Docker + CI + operacao)
 └── README.md
 ```
+
+## Infraestrutura da Evolution
+
+A Evolution dedicada roda separadamente em
+`https://evolution.ufg.sigaacaiu.com`. O dashboard administrativo entra por
+`/cfgevo`, protegido pelo Cloudflare Access, e redireciona para o Manager
+embutido. Compose, testes, backup e rollout estao em
+[`infra/evolution/README.md`](infra/evolution/README.md).
 
 ## Issues e sugestoes
 
