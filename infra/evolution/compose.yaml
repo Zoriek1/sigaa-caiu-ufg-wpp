@@ -97,7 +97,7 @@ services:
         - CMD
         - node
         - -e
-        - fetch('http://127.0.0.1:8080/server/ok').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))
+        - fetch('http://127.0.0.1:8080/verify-creds',{method:'POST',headers:{apikey:process.env.AUTHENTICATION_API_KEY}}).then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))
       interval: 15s
       timeout: 10s
       retries: 20

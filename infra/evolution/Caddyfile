@@ -1,6 +1,14 @@
 {$EVOLUTION_SITE_ADDRESS} {
 	encode zstd gzip
 
+	# Evolution 2.3.7 has no native /server/ok route. Keep the public
+	# operational contract by proxying that path to its real root endpoint.
+	@server_ok path /server/ok
+	handle @server_ok {
+		rewrite * /
+		reverse_proxy evolution:8080
+	}
+
 	@dashboard_bootstrap path /cfgevo /cfgevo/*
 	handle @dashboard_bootstrap {
 		header {

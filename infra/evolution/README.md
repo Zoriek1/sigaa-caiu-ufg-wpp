@@ -78,6 +78,10 @@ Validacao manual depois de publicar:
    `/manager/` sem formulario de API key.
 3. `/server/ok` deve continuar acessivel sem Access.
 
+A versao `2.3.7` nao possui `/server/ok` nativo. O Caddy preserva esse contrato
+publico encaminhando o caminho para a raiz real da Evolution; o health check do
+container valida diretamente `/verify-creds` com a chave configurada.
+
 ## Backup e restauracao
 
 O deploy executa um `pg_dump` antes de atualizar uma instalacao existente. Para
