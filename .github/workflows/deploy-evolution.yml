@@ -1,0 +1,52 @@
+name: Deploy Evolution
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-evolution-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: evolution-production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EVOLUTION_SSH_PRIVATE_KEY }}
+          SSH_HOST_KEY: ${{ secrets.EVOLUTION_SSH_HOST_KEY }}
+        run: |
+          umask 077
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$SSH_HOST_KEY" > ~/.ssh/known_hosts
+
+      - name: Upload immutable release
+        env:
+          SSH_HOST: ${{ secrets.EVOLUTION_SSH_HOST }}
+          SSH_PORT: ${{ secrets.EVOLUTION_SSH_PORT }}
+          SSH_USER: ${{ secrets.EVOLUTION_SSH_USER }}
+          DEPLOY_PATH: ${{ secrets.EVOLUTION_DEPLOY_PATH }}
+        run: |
+          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "mkdir -p '$DEPLOY_PATH/releases/$GITHUB_SHA' '$DEPLOY_PATH/shared/backups'"
+          rsync -az --delete \
+            -e "ssh -p $SSH_PORT" \
+            infra/evolution/ \
+            "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/releases/$GITHUB_SHA/"
+
+      - name: Backup, deploy and verify with rollback
+        env:
+          SSH_HOST: ${{ secrets.EVOLUTION_SSH_HOST }}
+          SSH_PORT: ${{ secrets.EVOLUTION_SSH_PORT }}
+          SSH_USER: ${{ secrets.EVOLUTION_SSH_USER }}
+          DEPLOY_PATH: ${{ secrets.EVOLUTION_DEPLOY_PATH }}
+        run: |
+          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            sh -s -- "$DEPLOY_PATH" "$GITHUB_SHA" \
+            < infra/evolution/scripts/deploy-release.sh
