@@ -5,12 +5,18 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "db:local": "wrangler d1 execute sigaa-caiu-db --local --file=schema.sql",
-    "db:remote": "wrangler d1 execute sigaa-caiu-db --remote --file=schema.sql"
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "db:local": "wrangler d1 execute sigaa-caiu-ufg-db --local --file=schema.sql",
+    "db:remote": "wrangler d1 execute sigaa-caiu-ufg-db --remote --file=schema.sql",
+    "db:notifications:local": "wrangler d1 execute sigaa-caiu-ufg-db --local --file=schema_migration_notifications.sql",
+    "db:notifications:remote": "wrangler d1 execute sigaa-caiu-ufg-db --remote --file=schema_migration_notifications.sql"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241205.0",
+    "miniflare": "^3.20250718.3",
     "typescript": "^5.7.0",
+    "vitest": "^4.1.10",
     "wrangler": "^3.99.0"
   }
 }
