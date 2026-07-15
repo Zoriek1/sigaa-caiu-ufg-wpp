@@ -1,0 +1,132 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  worker:
+    name: Worker tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: worker/package-lock.json
+      - run: npm ci
+        working-directory: worker
+      - run: npm run typecheck
+        working-directory: worker
+      - run: npm test
+        working-directory: worker
+
+  web:
+    name: Frontend build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+        working-directory: web
+      - run: npm run build
+        working-directory: web
+
+  evolution-docker:
+    name: Evolution Docker smoke test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/evolution
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: infra/evolution/tests/package-lock.json
+
+      - name: Reject floating Docker images
+        run: |
+          if grep -R --include='*.yaml' --include='*.yml' -En 'image:[[:space:]]+[^#[:space:]]+:latest([@[:space:]]|$)' .; then
+            echo 'Docker images must not use latest' >&2
+            exit 1
+          fi
+
+      - name: Prepare disposable environment
+        run: |
+          umask 077
+          api_key="$(openssl rand -hex 32)"
+          postgres_password="$(openssl rand -hex 32)"
+          redis_password="$(openssl rand -hex 32)"
+          install -m 600 /dev/null .env.ci
+          printf '%s\n' \
+            'EVOLUTION_ENV_FILE=.env.ci' \
+            'EVOLUTION_PUBLIC_URL=http://localhost:18080' \
+            'EVOLUTION_SITE_ADDRESS=http://localhost' \
+            'EVOLUTION_LOCAL_PORT=18081' \
+            "AUTHENTICATION_API_KEY=$api_key" \
+            "POSTGRES_PASSWORD=$postgres_password" \
+            "REDIS_PASSWORD=$redis_password" \
+            'POSTGRES_DATABASE=evolution_ci' \
+            'POSTGRES_USERNAME=evolution_ci' \
+            'CADDY_BIND_ADDRESS=127.0.0.1' \
+            'CADDY_HTTP_PORT=18080' \
+            'CADDY_HTTPS_PORT=18443' >> .env.ci
+
+      - name: Validate Compose and shell scripts
+        run: |
+          docker compose --env-file .env.ci --file compose.yaml --file compose.ci.yaml config --quiet
+          sh -n scripts/healthcheck.sh
+          sh -n scripts/backup-postgres.sh
+          sh -n scripts/deploy-release.sh
+          if ! command -v shellcheck >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install --yes shellcheck
+          fi
+          shellcheck scripts/healthcheck.sh scripts/backup-postgres.sh scripts/deploy-release.sh
+
+      - name: Install browser test dependencies
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+        working-directory: infra/evolution/tests
+
+      - name: Start Evolution stack
+        run: |
+          docker compose --env-file .env.ci --file compose.yaml --file compose.ci.yaml pull
+          docker compose --env-file .env.ci --file compose.yaml --file compose.ci.yaml up --detach --wait --wait-timeout 300
+
+      - name: Test API and dashboard
+        run: |
+          set -a
+          . ./.env.ci
+          set +a
+          sh scripts/healthcheck.sh
+          SMOKE_BASE_URL="$EVOLUTION_PUBLIC_URL" SMOKE_API_KEY="$AUTHENTICATION_API_KEY" npm --prefix tests run smoke
+        env:
+          HEALTHCHECK_MAX_ATTEMPTS: 12
+
+      - name: Show container logs after failure
+        if: failure()
+        run: docker compose --env-file .env.ci --file compose.yaml --file compose.ci.yaml logs --no-color --tail 200
+
+      - name: Stop disposable stack
+        if: always()
+        run: |
+          if [ -f .env.ci ]; then
+            docker compose --env-file .env.ci --file compose.yaml --file compose.ci.yaml down --volumes --remove-orphans
+          fi

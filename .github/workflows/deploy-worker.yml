@@ -6,8 +6,15 @@ on:
     paths:
       - "worker/**"
 
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-worker-production
+  cancel-in-progress: false
+
 jobs:
-  deploy:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,6 +22,33 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
+          cache-dependency-path: worker/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: worker
+
+      - name: Typecheck
+        run: npm run typecheck
+        working-directory: worker
+
+      - name: Test
+        run: npm test
+        working-directory: worker
+
+  deploy:
+    needs: verify
+    runs-on: ubuntu-latest
+    environment: worker-production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: worker/package-lock.json
 
       - name: Install dependencies
         run: npm ci
