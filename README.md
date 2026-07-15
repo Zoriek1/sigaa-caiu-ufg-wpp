@@ -28,6 +28,19 @@ Frontend (Next.js no Vercel)
 
 > **Nota:** A UFG usa CAS/SSO (`sso.ufg.br`) para autenticacao. O check E2E de login (camada 4) nao e suportado pois o SSO enforca reCAPTCHA.
 
+## Alertas em grupos do WhatsApp
+
+Depois de 2 falhas consecutivas, o Worker confirma o incidente e envia uma unica
+mensagem para todos os grupos da instancia dedicada `sigaa-caiu-ufg` na Evolution
+API. O alerta usa a URL publica oficial `https://ufg.sigaacaiu.com`; nao ha aviso
+para lentidao, falha isolada, permanencia offline ou recuperacao. As entregas sao
+idempotentes por incidente/canal/grupo, com retry de falhas temporarias e
+cancelamento automatico se o SIGAA voltar.
+
+O Telegram pode permanecer configurado em paralelo, seguindo exatamente a mesma
+regra de enviar somente a queda confirmada. Configuracao e rollout estao descritos
+em [`worker/README.md`](worker/README.md#alertas-de-queda).
+
 ## API Publica
 
 Base URL: `https://sigaa-caiu-ufg-worker.matheusmrno.workers.dev`

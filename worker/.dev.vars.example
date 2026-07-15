@@ -1,6 +1,11 @@
-# Copy to .dev.vars for local wrangler dev (gitignored).
-# In production, set these via: npx wrangler secret put <NAME>
+# Development-only placeholders. Copy to .dev.vars and never commit real values.
 SIGAA_MONITOR_USER=your_sigaa_username
 SIGAA_MONITOR_PASS=your_sigaa_password
-TELEGRAM_BOT_TOKEN=your_bot_token
-TELEGRAM_CHAT_ID=your_chat_id
+
+EVOLUTION_API_URL=https://evolution.ufg.sigaacaiu.com
+EVOLUTION_API_KEY=replace-with-instance-api-key
+EVOLUTION_INSTANCE_NAME=sigaa-caiu-ufg
+
+# Optional parallel Telegram delivery.
+TELEGRAM_BOT_TOKEN=replace-with-bot-token
+TELEGRAM_CHAT_ID=replace-with-chat-id
