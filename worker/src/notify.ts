@@ -1,99 +1,309 @@
-import type { CheckResult, CheckRow, Env, LayerStatus } from "./types";
+import type {
+  Env,
+  IncidentTransition,
+  NotificationChannel,
+  NotificationDeliveryRow,
+  NotificationEventRow,
+} from "./types";
 import { getOpenIncident } from "./db";
+import {
+  ProviderRequestError,
+  fetchEvolutionGroups,
+  normalizeEvolutionBaseUrl,
+  sendEvolutionText,
+  type EvolutionConfig,
+} from "./evolution";
+import {
+  cancelIncidentNotifications,
+  claimNotificationDelivery,
+  ensureNotificationEvent,
+  finalizeNotificationEvents,
+  getDueNotificationDeliveries,
+  getDueNotificationEvents,
+  insertNotificationTargets,
+  markDeliveryFailed,
+  markDeliverySent,
+  markEventDiscovered,
+  markEventFailedFinal,
+  scheduleEventRetry,
+} from "./notification-outbox";
 
-export async function notifyIfNeeded(
+export const OUTAGE_MESSAGE =
+  "🚨 O SIGAA caiu!\n\n" +
+  "O SIGAA da UFG está fora do ar no momento.\n" +
+  "Acompanhe: https://ufg.sigaacaiu.com";
+
+const DELIVERY_CONCURRENCY = 5;
+const PROCESSING_LEASE_MS = 2 * 60_000;
+const TELEGRAM_TARGET_ID = "configured-chat";
+
+export async function applyIncidentNotificationTransition(
   env: Env,
-  result: CheckResult,
-  lastChecks: CheckRow[]
+  transition: IncidentTransition
 ): Promise<void> {
-  if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) return;
+  if (
+    transition.type === "opened" ||
+    (transition.type === "unchanged" && transition.incidentId !== null)
+  ) {
+    const incidentId = transition.incidentId;
+    if (incidentId === null) return;
+    const channels = configuredChannels(env);
+    await Promise.all(
+      channels.map((channel) =>
+        ensureNotificationEvent(env.DB, incidentId, channel)
+      )
+    );
+    return;
+  }
 
-  const previousWasOffline =
-    lastChecks.length > 0 && lastChecks[0].status === "offline";
-  const twoPreviousOffline =
-    lastChecks.length >= 2 &&
-    lastChecks[0].status === "offline" &&
-    lastChecks[1].status === "offline";
+  if (transition.type === "closed") {
+    await cancelIncidentNotifications(env.DB, transition.incidentId);
+  }
+}
 
-  // Notify when SIGAA goes down (2nd consecutive failure = confirmed)
-  if (result.status === "offline" && previousWasOffline && !twoPreviousOffline) {
-    // Only notify on the 2nd failure (the moment it's confirmed)
-    // Don't re-notify on 3rd, 4th, etc.
-    await sendTelegram(
-      env,
-      "🔴 *SIGAA caiu!*\n\n" +
-        `Erro: ${result.error || "HTTP " + result.httpCode}\n` +
-        `Tempo de resposta: ${result.responseTimeMs}ms\n` +
-        layerSummary(result) +
-        "\n\n" +
-        `[Ver status](https://ufg.sigaacaiu.com)`
+export async function processIncidentNotifications(
+  env: Env,
+  incidentId: number
+): Promise<void> {
+  const openIncident = await getOpenIncident(env.DB);
+  if (!openIncident || openIncident.id !== incidentId) {
+    await cancelIncidentNotifications(env.DB, incidentId);
+    return;
+  }
+
+  const now = new Date();
+  const nowIso = toIsoSeconds(now);
+  const dueEvents = await getDueNotificationEvents(env.DB, incidentId, nowIso);
+  for (const event of dueEvents) {
+    await discoverNotificationTargets(env, event, now);
+  }
+
+  const deliveryNow = new Date();
+  const deliveryNowIso = toIsoSeconds(deliveryNow);
+  const staleBeforeIso = toIsoSeconds(
+    new Date(deliveryNow.getTime() - PROCESSING_LEASE_MS)
+  );
+  const deliveries = await getDueNotificationDeliveries(
+    env.DB,
+    incidentId,
+    deliveryNowIso,
+    staleBeforeIso
+  );
+
+  await mapWithConcurrency(deliveries, DELIVERY_CONCURRENCY, (delivery) =>
+    processDelivery(env, delivery, deliveryNowIso, staleBeforeIso)
+  );
+
+  await finalizeNotificationEvents(env.DB, incidentId);
+}
+
+export function retryDelaySeconds(attempts: number): number {
+  if (attempts <= 1) return 60;
+  if (attempts === 2) return 120;
+  return 300;
+}
+
+async function discoverNotificationTargets(
+  env: Env,
+  event: NotificationEventRow,
+  now: Date
+): Promise<void> {
+  try {
+    if (event.channel === "whatsapp") {
+      const config = evolutionConfig(env);
+      if (!config) throw new Error("evolution_configuration_missing");
+
+      const groups = await fetchEvolutionGroups(config);
+      await insertNotificationTargets(
+        env.DB,
+        event.incident_id,
+        event.channel,
+        groups.map((group) => ({ id: group.id, name: group.name }))
+      );
+      await markEventDiscovered(env.DB, event.id, groups.length === 0);
+      return;
+    }
+
+    if (!telegramConfigured(env)) {
+      throw new Error("telegram_configuration_missing");
+    }
+
+    await insertNotificationTargets(env.DB, event.incident_id, event.channel, [
+      { id: TELEGRAM_TARGET_ID, name: "Telegram" },
+    ]);
+    await markEventDiscovered(env.DB, event.id, false);
+  } catch (error) {
+    const attempts = event.attempts + 1;
+    if (error instanceof ProviderRequestError && !error.retryable) {
+      await markEventFailedFinal(
+        env.DB,
+        event.id,
+        attempts,
+        errorMessage(error)
+      );
+      return;
+    }
+    await scheduleEventRetry(
+      env.DB,
+      event.id,
+      attempts,
+      nextAttemptIso(now, attempts),
+      errorMessage(error)
+    );
+  }
+}
+
+async function processDelivery(
+  env: Env,
+  delivery: NotificationDeliveryRow,
+  nowIso: string,
+  staleBeforeIso: string
+): Promise<void> {
+  const claimed = await claimNotificationDelivery(
+    env.DB,
+    delivery.id,
+    nowIso,
+    staleBeforeIso
+  );
+  if (!claimed) return;
+
+  const openIncident = await getOpenIncident(env.DB);
+  if (!openIncident || openIncident.id !== delivery.incident_id) {
+    await cancelIncidentNotifications(env.DB, delivery.incident_id);
+    return;
+  }
+
+  try {
+    const providerMessageId =
+      delivery.channel === "whatsapp"
+        ? await sendWhatsAppDelivery(env, delivery)
+        : await sendTelegramDelivery(env);
+    await markDeliverySent(env.DB, delivery.id, providerMessageId);
+  } catch (error) {
+    const attempts = delivery.attempts + 1;
+    const retryable =
+      error instanceof ProviderRequestError ? error.retryable : true;
+    await markDeliveryFailed(
+      env.DB,
+      delivery.id,
+      attempts,
+      retryable,
+      nextAttemptIso(new Date(), attempts),
+      errorMessage(error)
+    );
+  }
+}
+
+async function sendWhatsAppDelivery(
+  env: Env,
+  delivery: NotificationDeliveryRow
+): Promise<string | null> {
+  const config = evolutionConfig(env);
+  if (!config) throw new Error("evolution_configuration_missing");
+  return sendEvolutionText(config, delivery.target_id, OUTAGE_MESSAGE);
+}
+
+async function sendTelegramDelivery(env: Env): Promise<string | null> {
+  if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) {
+    throw new Error("telegram_configuration_missing");
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(
+      `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: env.TELEGRAM_CHAT_ID,
+          text: OUTAGE_MESSAGE,
+          disable_web_page_preview: false,
+        }),
+        signal: AbortSignal.timeout(10_000),
+      }
+    );
+  } catch (error) {
+    throw new ProviderRequestError(
+      `telegram_network_error: ${errorMessage(error)}`,
+      true
     );
   }
 
-  // Notify recovery only if there's an actual open incident
-  if (result.status !== "offline" && previousWasOffline) {
-    const openIncident = await getOpenIncident(env.DB);
-    if (openIncident) {
-      await sendTelegram(
-        env,
-        "🟢 *SIGAA voltou!*\n\n" +
-          `Tempo de resposta: ${result.responseTimeMs}ms\n` +
-          layerSummary(result) +
-          "\n\n" +
-          `[Ver status](https://ufg.sigaacaiu.com)`
-      );
-    }
-    // If no open incident, it was just a single flap — ignore
+  const body = await response.text();
+  if (!response.ok) {
+    const retryable = response.status === 429 || response.status >= 500;
+    throw new ProviderRequestError(
+      `telegram_http_${response.status}: ${body.slice(0, 500)}`,
+      retryable,
+      response.status
+    );
+  }
+
+  if (!body) return null;
+  try {
+    const payload = JSON.parse(body) as {
+      result?: { message_id?: number | string };
+    };
+    const messageId = payload.result?.message_id;
+    return messageId === undefined ? null : String(messageId);
+  } catch {
+    return null;
   }
 }
 
-function layerSummary(result: CheckResult): string {
-  const icon = (l: { status: LayerStatus }): string => {
-    switch (l.status) {
-      case "online":
-        return "✓";
-      case "degraded":
-        return "~";
-      case "offline":
-        return "✗";
-      default:
-        return "·";
-    }
-  };
-  const parts = [
-    `reachability ${icon(result.reachability)}`,
-    `portal ${icon(result.portal)}`,
-    `login_form ${icon(result.loginForm)}`,
-    `login_e2e ${icon(result.loginE2e)}`,
-  ];
-  // Append the failing layer's error for quick diagnosis.
-  const failingLayer =
-    result.reachability.status === "offline"
-      ? result.reachability
-      : result.portal.status === "offline"
-        ? result.portal
-        : result.loginForm.status === "offline"
-          ? result.loginForm
-          : result.loginE2e.status === "offline"
-            ? result.loginE2e
-            : null;
-  const escapeMd = (s: string) => s.replace(/([_*`\[\]()])/g, "\\$1");
-  const body = `_${parts.join(" · ")}_`;
-  const suffix = failingLayer?.error ? ` (${escapeMd(failingLayer.error)})` : "";
-  return body + suffix;
+function configuredChannels(env: Env): NotificationChannel[] {
+  const channels: NotificationChannel[] = [];
+  if (evolutionConfig(env)) channels.push("whatsapp");
+  if (telegramConfigured(env)) channels.push("telegram");
+  return channels;
 }
 
-async function sendTelegram(env: Env, text: string): Promise<void> {
-  const url = `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`;
+function evolutionConfig(env: Env): EvolutionConfig | null {
+  const baseUrl = env.EVOLUTION_API_URL?.trim();
+  const apiKey = env.EVOLUTION_API_KEY?.trim();
+  const instanceName = env.EVOLUTION_INSTANCE_NAME?.trim();
+  if (!baseUrl || !apiKey || !instanceName) return null;
 
-  await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      chat_id: env.TELEGRAM_CHAT_ID,
-      text,
-      parse_mode: "Markdown",
-      disable_web_page_preview: true,
-    }),
-  });
+  return {
+    baseUrl: normalizeEvolutionBaseUrl(baseUrl),
+    apiKey,
+    instanceName,
+  };
+}
+
+function telegramConfigured(env: Env): boolean {
+  return Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID);
+}
+
+function nextAttemptIso(now: Date, attempts: number): string {
+  return toIsoSeconds(
+    new Date(now.getTime() + retryDelaySeconds(attempts) * 1_000)
+  );
+}
+
+function toIsoSeconds(date: Date): string {
+  return date.toISOString().replace(/\.\d{3}Z$/, "Z");
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "unknown_error";
+}
+
+async function mapWithConcurrency<T>(
+  items: T[],
+  concurrency: number,
+  fn: (item: T) => Promise<void>
+): Promise<void> {
+  let cursor = 0;
+  const workers = Array.from(
+    { length: Math.min(concurrency, items.length) },
+    async () => {
+      while (cursor < items.length) {
+        const item = items[cursor++];
+        await fn(item);
+      }
+    }
+  );
+  await Promise.all(workers);
 }

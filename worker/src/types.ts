@@ -59,6 +59,50 @@ export interface IncidentRow {
   duration_s: number | null;
 }
 
+export type IncidentTransition =
+  | { type: "opened"; incidentId: number }
+  | { type: "closed"; incidentId: number }
+  | { type: "unchanged"; incidentId: number | null };
+
+export type NotificationChannel = "whatsapp" | "telegram";
+
+export type NotificationEventStatus =
+  | "pending"
+  | "discovered"
+  | "completed"
+  | "failed_final"
+  | "canceled";
+
+export interface NotificationEventRow {
+  id: number;
+  incident_id: number;
+  channel: NotificationChannel;
+  status: NotificationEventStatus;
+  attempts: number;
+  next_attempt_at: string;
+  last_error: string | null;
+}
+
+export type NotificationDeliveryStatus =
+  | "pending"
+  | "processing"
+  | "sent"
+  | "failed_final"
+  | "canceled";
+
+export interface NotificationDeliveryRow {
+  id: number;
+  incident_id: number;
+  channel: NotificationChannel;
+  target_id: string;
+  target_name: string | null;
+  status: NotificationDeliveryStatus;
+  attempts: number;
+  next_attempt_at: string;
+  processing_started_at: string | null;
+  last_error: string | null;
+}
+
 export interface LastKnownLayer {
   status: LayerStatus;
   error: string | null;
@@ -111,6 +155,9 @@ export interface Env {
   DB: D1Database;
   TELEGRAM_BOT_TOKEN?: string;
   TELEGRAM_CHAT_ID?: string;
+  EVOLUTION_API_URL?: string;
+  EVOLUTION_API_KEY?: string;
+  EVOLUTION_INSTANCE_NAME?: string;
   SIGAA_MONITOR_USER?: string;
   SIGAA_MONITOR_PASS?: string;
 }

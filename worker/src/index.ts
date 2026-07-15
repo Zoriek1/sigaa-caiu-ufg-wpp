@@ -2,7 +2,10 @@ import type { Env } from "./types";
 import { performHealthCheck } from "./health";
 import { saveCheck, getLastNChecks, manageIncidents, cleanupOldChecks, saveOtherServiceChecks } from "./db";
 import { checkAllOtherServices } from "./other-services";
-import { notifyIfNeeded } from "./notify";
+import {
+  applyIncidentNotificationTransition,
+  processIncidentNotifications,
+} from "./notify";
 import { handleApiRequest } from "./api";
 import { withCors, handlePreflight } from "./cors";
 
@@ -35,8 +38,12 @@ export default {
       saveCheck(env.DB, result),
       saveOtherServiceChecks(env.DB, otherResults),
     ]);
-    await manageIncidents(env.DB, result, lastChecks);
-    ctx.waitUntil(notifyIfNeeded(env, result, lastChecks));
+    const transition = await manageIncidents(env.DB, result, lastChecks);
+    await applyIncidentNotificationTransition(env, transition);
+
+    if (transition.type !== "closed" && transition.incidentId !== null) {
+      ctx.waitUntil(processIncidentNotifications(env, transition.incidentId));
+    }
 
     // Cleanup old data once per day
     if (now.getUTCHours() === 3 && minute < 5) {

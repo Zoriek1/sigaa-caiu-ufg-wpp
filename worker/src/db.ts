@@ -2,6 +2,7 @@ import type {
   CheckResult,
   CheckRow,
   IncidentRow,
+  IncidentTransition,
   LastKnownLayers,
   LayerStatus,
   OtherServiceCheckResult,
@@ -56,7 +57,7 @@ export async function manageIncidents(
   db: D1Database,
   result: CheckResult,
   lastChecks: CheckRow[]
-): Promise<void> {
+): Promise<IncidentTransition> {
   const openIncident = await getOpenIncident(db);
   const previousWasOffline =
     lastChecks.length > 0 && lastChecks[0].status === "offline";
@@ -64,10 +65,21 @@ export async function manageIncidents(
   if (result.status === "offline" && previousWasOffline && !openIncident) {
     // 2 consecutive failures: open a new incident
     // Use the previous check's timestamp as the start
-    await db
+    const inserted = await db
       .prepare(`INSERT INTO incidents (started_at) VALUES (?)`)
       .bind(lastChecks[0].timestamp)
       .run();
+
+    const insertedId = Number(inserted.meta.last_row_id);
+    if (Number.isInteger(insertedId) && insertedId > 0) {
+      return { type: "opened", incidentId: insertedId };
+    }
+
+    const createdIncident = await getOpenIncident(db);
+    if (!createdIncident) {
+      throw new Error("incident_inserted_but_not_found");
+    }
+    return { type: "opened", incidentId: createdIncident.id };
   }
 
   if (result.status !== "offline" && openIncident) {
@@ -82,13 +94,32 @@ export async function manageIncidents(
       )
       .bind(now, durationS, openIncident.id)
       .run();
+
+    return { type: "closed", incidentId: openIncident.id };
   }
+
+
+  return { type: "unchanged", incidentId: openIncident?.id ?? null };
 }
 
 export async function cleanupOldChecks(db: D1Database): Promise<void> {
   await db.batch([
     db.prepare(`DELETE FROM checks WHERE timestamp < datetime('now', '-730 days')`),
     db.prepare(`DELETE FROM other_service_checks WHERE timestamp < datetime('now', '-30 days')`),
+    db.prepare(
+      `DELETE FROM notification_deliveries
+       WHERE incident_id IN (
+         SELECT id FROM incidents
+         WHERE ended_at IS NOT NULL AND ended_at < datetime('now', '-90 days')
+       )`
+    ),
+    db.prepare(
+      `DELETE FROM notification_events
+       WHERE incident_id IN (
+         SELECT id FROM incidents
+         WHERE ended_at IS NOT NULL AND ended_at < datetime('now', '-90 days')
+       )`
+    ),
   ]);
 }
 
